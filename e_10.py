@@ -46,7 +46,7 @@ class E10(Problem):
         if nentities <= 3:
             # Circles
             points = world.get_points()
-            return world.all_circles(points)
+            !! WRONG return world.all_circles(points)
         elif nentities <= 5:
             # Lines
             return (
