@@ -33,8 +33,10 @@ from .euclidean_world import EuclideanWorld
 
 # http://py-search.readthedocs.io/en/latest/py_search.html#py_search.base.Problem
 class E10(Problem):
-    def __init__(self):
-        super(E10, self).__init__(EuclideanWorld([Polygon((0, 0), (8, 0), (8, 8), (0, 8))]))
+    def __init__(self, initial=None, *args, **kwargs):
+        if initial is None:
+            initial = EuclideanWorld([Polygon((0, 0), (8, 0), (8, 8), (0, 8))])
+        super(E10, self).__init__(initial, *args, **kwargs)
 
     @staticmethod
     def goal_test(world):
