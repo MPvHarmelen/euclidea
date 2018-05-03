@@ -1,8 +1,12 @@
+from pytest import raises
+
 from hypothesis import given, settings
-from hypothesis.strategies import builds, integers, composite, assume
+from hypothesis.strategies import integers, sets
+from hypothesis.strategies import builds, composite, assume
 
 from sympy.geometry import Point, Line, RegularPolygon
 from sympy.geometry.util import intersection
+from sympy.geometry.ellipse import Circle
 
 from euclidea.euclidean_world import EuclideanWorld
 
@@ -60,3 +64,54 @@ def test_points_from_polygon_and_line(p, rp):
     assume(p != centre)
     line = Line(p, centre)
     assert len(EuclideanWorld([rp, line]).get_points()) == 2 + rp.args[2]
+
+
+@given(points())
+def test_circles_one_point(p):
+    """
+    Check whether `all_circles` yields all expected circles with one point
+    """
+    empty = EuclideanWorld.all_circles([p])
+    with raises(StopIteration):
+        next(empty)
+
+
+@given(points(), points())
+def test_all_circles_two_points(p1, p2):
+    """
+    Check whether `all_circles` yields all expected circles with two points
+    """
+    assume(p1 != p2)
+    two_circles = EuclideanWorld.all_circles([p1, p2])
+    assert len(two_circles) == 2
+    r = p1.distance(p2)
+    assert Circle(p1, r) in two_circles
+    assert Circle(p2, r) in two_circles
+
+
+@given(points(), points(), points())
+def test_all_circles_two_points(p1, p2, p3):
+    """
+    Check whether `all_circles` yields all expected circles with three points
+    """
+    assume(p1 != p2)
+    assume(p2 != p3)
+    assume(p3 != p1)
+    two_circles = list(EuclideanWorld.all_circles([p1, p2, p3]))
+    assert len(two_circles) <= 6
+    assert len(two_circles) >= 3
+    assert Circle(p1, p1.distance(p2)) in two_circles
+    assert Circle(p1, p1.distance(p3)) in two_circles
+    assert Circle(p2, p2.distance(p1)) in two_circles
+    assert Circle(p2, p2.distance(p3)) in two_circles
+    assert Circle(p3, p3.distance(p1)) in two_circles
+    assert Circle(p3, p3.distance(p2)) in two_circles
+
+
+@given(sets(points()))
+def test_all_circles_count(points):
+    """Check whether `all_circles` yields the expected number of circles"""
+    assume(len(points) > 1)
+    circles = list(EuclideanWorld.all_circles(points))
+    assert len(circles) <= len(points) * (len(points) - 1)
+    assert len(circles) >= len(points)
