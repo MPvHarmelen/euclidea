@@ -130,3 +130,14 @@ def test_all_circles_count(points):
     circles = list(EuclideanWorld.all_circles(points))
     assert len(circles) <= len(points) * (len(points) - 1)
     assert len(circles) >= len(points)
+
+
+@given(lines(), lines(), lines())
+def test_add_entity(line1, line2, line3):
+    incremental = EuclideanWorld().\
+        add_entity(line1).\
+        add_entity(line2).\
+        add_entity(line3)
+    oner = EuclideanWorld((line1, line2, line3))
+    assert oner == incremental
+    assert oner.get_points() == incremental.get_points()

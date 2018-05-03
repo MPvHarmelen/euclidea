@@ -7,17 +7,22 @@ from sympy.geometry.entity import GeometryEntity
 
 
 class EuclideanWorld:
-    def __init__(self, entities, normalise_lines=True):
+    def __init__(self, entities=(), normalise_lines=True, points=None):
         self.entities = frozenset(
             self.normalise_line(e)
-                if normalise_lines and isinstance(e, Line)
-                else e
+            if normalise_lines and isinstance(e, Line)
+            else e
             for e in entities
         )
         for entity in entities:
-            if not isinstance(entity, GeometryEntity):
-                raise TypeError(f"All elements of {self.__class__.__name__}"
-                                " must be an instance of GeometryEntity")
+            self.type_check(entity)
+        self.points = points
+
+    @staticmethod
+    def type_check(entity):
+        if not isinstance(entity, GeometryEntity):
+            raise TypeError(f"All elements of {self.__class__.__name__}"
+                            " must be an instance of GeometryEntity")
 
     def __repr__(self):
         return f"{self.__class__.__name__}({set(self.entities)!r})"
@@ -70,13 +75,31 @@ class EuclideanWorld:
 
     def get_points(self):
         """Get all "interesting" points in the current world"""
-        return set(
-            it.chain(
-                *(
-                    (e for e in intersection(*comb) if isinstance(e, Point))
-                    for comb in it.combinations(self.entities, 2)
-                ),
-                *(e.vertices for e in self.entities if hasattr(e, 'vertices'))
+        if self.points is None:
+            self.points = set(
+                it.chain(
+                    *(
+                        (e for e in intersection(*comb) if isinstance(e, Point))
+                        for comb in it.combinations(self.entities, 2)
+                    ),
+                    *(e.vertices for e in self.entities if hasattr(e, 'vertices'))
+                )
+            )
+        return self.points
+
+    def add_entity(self, entity):
+        """Create a new EuclideanWorld with one additional entity"""
+        self.type_check(entity)
+        if isinstance(entity, Line):
+            entity = self.normalise_line(entity)
+        return EuclideanWorld(
+            self.entities | {entity},
+            False,
+            self.get_points().union(
+                i
+                for e in self.entities
+                for i in intersection(entity, e)
+                if isinstance(i, Point)
             )
         )
 
