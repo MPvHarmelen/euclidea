@@ -1,6 +1,0 @@
-[
-  "test_euclidean_world.py::test_points_from_lines",
-  "test_euclidean_world.py::test_points_from_single_line",
-  "test_euclidean_world.py::test_points_from_polygon",
-  "test_euclidean_world.py::test_points_from_polygon_and_line"
-]
