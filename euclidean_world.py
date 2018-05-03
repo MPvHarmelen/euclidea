@@ -1,9 +1,12 @@
 import itertools as it
+import logging
 
 from sympy.geometry import Point, Line
 from sympy.geometry.ellipse import Circle
 from sympy.geometry.util import intersection
 from sympy.geometry.entity import GeometryEntity
+
+logger = logging.getLogger(None if __name__ == '__main__' else __name__)
 
 
 class EuclideanWorld:
@@ -57,6 +60,7 @@ class EuclideanWorld:
     @staticmethod
     def normalise_line(line):
         """Define a line using points on (0, _) and (1, _)"""
+        logger.debug(f"Normalizing {line}")
         if line.p1.x == 0 and line.p2.x == 1:
             # Already normalised
             return line
@@ -78,11 +82,17 @@ class EuclideanWorld:
         if self.points is None:
             self.points = set(
                 it.chain(
-                    *(
-                        (e for e in intersection(*comb) if isinstance(e, Point))
+                    (
+                        e
                         for comb in it.combinations(self.entities, 2)
+                        for e in intersection(*comb)
+                        if isinstance(e, Point)
                     ),
-                    *(e.vertices for e in self.entities if hasattr(e, 'vertices'))
+                    *(
+                        e.vertices
+                        for e in self.entities
+                        if hasattr(e, 'vertices')
+                    )
                 )
             )
         return self.points
@@ -116,3 +126,10 @@ class EuclideanWorld:
             )
             for radius in radii:
                 yield Circle(centre, radius)
+
+    @staticmethod
+    def all_lines(points):
+        """
+        Find all line the can be made using the given points
+        """
+        return it.starmap(Line, it.combinations(points, 2))
