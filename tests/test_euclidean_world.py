@@ -1,9 +1,10 @@
 from pytest import raises
 
-from hypothesis import given, settings
+from hypothesis import given, settings, example
 from hypothesis.strategies import integers, sets
 from hypothesis.strategies import builds, composite, assume
 
+from sympy import sqrt
 from sympy.geometry import Point, Line, RegularPolygon
 from sympy.geometry.util import intersection
 from sympy.geometry.ellipse import Circle
@@ -141,3 +142,13 @@ def test_add_entity(line1, line2, line3):
     oner = EuclideanWorld((line1, line2, line3))
     assert oner == incremental
     assert oner.get_points() == incremental.get_points()
+
+
+@example(Line(
+    Point(4, 8 + 4*sqrt(7)),
+    Point(-8*sqrt(7)/7 + sqrt(7)*(-4*sqrt(7) + 8)/7 + 8, -4*sqrt(7) + 8)
+))
+@given(lines())
+def test_normalise_line(line):
+    norm = EuclideanWorld.normalise_line(line)
+    assert norm.is_similar(line)
