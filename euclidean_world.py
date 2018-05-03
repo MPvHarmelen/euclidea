@@ -1,7 +1,7 @@
 import itertools as it
 
 from sympy.geometry import Point
-from sympy.geometry.ellipse import Cicle
+from sympy.geometry.ellipse import Circle
 from sympy.geometry.util import intersection
 
 
