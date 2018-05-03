@@ -12,26 +12,40 @@ from euclidea.euclidean_world import EuclideanWorld
 
 
 def points():
-    return builds(
-        Point,
-        integers(min_value=-100, max_value=100),
-        integers(min_value=-100, max_value=100)
-    )
+    x = integers(min_value=-100, max_value=100)
+    y = integers(min_value=-100, max_value=100)
+    return builds(Point, x, y)
 
 
-def regular_polygons():
-    return builds(
-        RegularPolygon,
-        points(),
-        integers(min_value=1, max_value=100),
-        integers(min_value=3, max_value=100)
+@composite
+def regular_polygons(draw, not_centre=None):
+    centre = points()
+    if not_centre:
+        centre = centre.filter(centre.__ne__)
+
+    return RegularPolygon(
+        draw(centre),
+        draw(integers(min_value=1, max_value=100)),
+        draw(integers(min_value=3, max_value=6))
     )
 
 
 @composite
+def regular_polygon_and_point_pairs(draw):
+    """
+    Generate a point and a regular polygon who's centre is different from the
+    generated point
+    """
+    p = draw(points())
+    rp = draw(regular_polygons(p))
+    return (p, rp)
+
+
+@composite
 def lines(draw):
-    x = draw(points())
-    y = draw(points())
+    p = points()
+    x = draw(p)
+    y = draw(p)
     assume(x != y)
     return Line(x, y)
 
@@ -57,9 +71,10 @@ def test_points_from_polygon(rp):
 
 
 @settings(max_examples=1, max_shrinks=1)
-@given(points(), regular_polygons())
-def test_points_from_polygon_and_line(p, rp):
+@given(regular_polygon_and_point_pairs())
+def test_points_from_polygon_and_line(pair):
     """A Line through the centre of a polygon should have two intersections"""
+    p, rp = pair
     centre = rp.args[0]
     assume(p != centre)
     line = Line(p, centre)
