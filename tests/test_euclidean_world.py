@@ -144,11 +144,19 @@ def test_add_entity(line1, line2, line3):
     assert oner.get_points() == incremental.get_points()
 
 
+@given(lines())
 @example(Line(
     Point(4, 8 + 4*sqrt(7)),
     Point(-8*sqrt(7)/7 + sqrt(7)*(-4*sqrt(7) + 8)/7 + 8, -4*sqrt(7) + 8)
 ))
-@given(lines())
+@example(Line(
+    Point(4, 8 + 4*sqrt(7)),
+    Point(
+        -16*sqrt(7)/3
+        + (-2/3 + sqrt(7)/3)*(-3*sqrt(2)*sqrt(sqrt(7) + 4) - sqrt(7) + 11)
+        + 56/3, -3*sqrt(2)*sqrt(sqrt(7) + 4) - sqrt(7) + 11
+    )
+))
 def test_normalise_line(line):
     norm = EuclideanWorld.normalise_line(line)
     assert norm.is_similar(line)

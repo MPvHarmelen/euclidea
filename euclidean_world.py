@@ -72,10 +72,17 @@ class EuclideanWorld:
                 return Line((line.p1.x, 0), (line.p1.x, 1))
         # Normalise
         # Not using `else` to catch all uncovered cases of above if-else tree
-        return Line(
-            Line((0, 0), (0, 1)).intersection(line)[0],
-            Line((1, 0), (1, 1)).intersection(line)[0]
-        )
+        try:
+            return Line(
+                Line((0, 0), (0, 1)).intersection(line)[0],
+                Line((1, 0), (1, 1)).intersection(line)[0]
+            )
+        except IndexError as e:
+            if line.is_parallel(Line((0, 0), (0, 1))):
+                logger.warning(f"Parallel?! {line}")
+                return Line((line.p1.x, 0), (line.p1.x, 1))
+            else:
+                raise e
 
     def get_points(self):
         """Get all "interesting" points in the current world"""
