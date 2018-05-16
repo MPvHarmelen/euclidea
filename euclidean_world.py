@@ -10,6 +10,8 @@ logger = logging.getLogger(None if __name__ == '__main__' else __name__)
 
 
 class EuclideanWorld:
+    normalisation_cache = dict()
+
     def __init__(self, entities=(), normalise_lines=True, points=None):
         self.entities = frozenset(
             self.normalise_line(e)
@@ -57,9 +59,19 @@ class EuclideanWorld:
             if isinstance(other, EuclideanWorld) \
             else NotImplemented
 
-    @staticmethod
-    def normalise_line(line):
+    @classmethod
+    def normalise_line(cls, line):
         """Define a line using points on (0, _) and (1, _)"""
+        try:
+            return cls.normalisation_cache[line]
+        except KeyError:
+            return cls.normalisation_cache.setdefault(
+                line,
+                cls._normalise_line(line)
+            )
+
+    @staticmethod
+    def _normalise_line(line):
         logger.debug(f"Normalizing {line}")
         if line.p1.x == 0 and line.p2.x == 1:
             # Already normalised
